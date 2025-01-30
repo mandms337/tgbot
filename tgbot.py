@@ -1,21 +1,29 @@
-import logging
-
+import os
+import openai
 import telebot
-from telebot.types import Message
+from dotenv import load_dotenv
 
+load_dotenv()
 
-bot = telebot.TeleBot('7581915376:AAG8FWud6rpdfM7tRhVgaWmz19-AeX9Gogg')
+bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
+openai.api_key = os.getenv('OPENAI_KEY')
 
 @bot.message_handler(commands=['start'])
-def cmd_start(message: Message):
-    bot.send_message(message.chat.id,'Привет , опять тупишь , чем помочь , гений?')
+def cmd_start(message):
+    try :
+        response = openai.ChatCompletion.create(
+            model = 'gpt-4' ,
+            messages = [{'role': 'user', 'content': message.text}]
+        )
+        bot.reply_to(message , response['choises'][0]['message']['content'])
+    except Exception as e :
+        bot.reply_to(message , 'Ошибка:' + str(e))
 
 
-@bot.message_handler(content_types=['text'])
-def any_text(message: Message):
-    bot.send_message(message.chat.id, str(reversed(message.text)))
+@bot.message_handler(commands=['help'])
+def any_text(message):
+    bot.send_message(message.chat.id, 'Я пока ничего не могу')
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    bot.polling(none_stop=True, logger_level=logging.INFO)
+    bot.polling(none_stop=True)
