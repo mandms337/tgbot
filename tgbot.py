@@ -1,29 +1,25 @@
-import os
-import openai
-import telebot
-from dotenv import load_dotenv
+import asyncio
+import logging
 
-load_dotenv()
-
-bot = telebot.TeleBot(os.getenv('BOT_TOKEN'))
-openai.api_key = os.getenv('OPENAI_KEY')
-
-@bot.message_handler(commands=['start'])
-def cmd_start(message):
-    try :
-        response = openai.ChatCompletion.create(
-            model = 'gpt-4' ,
-            messages = [{'role': 'user', 'content': message.text}]
-        )
-        bot.reply_to(message , response['choises'][0]['message']['content'])
-    except Exception as e :
-        bot.reply_to(message , 'Ошибка:' + str(e))
+from aiogram import Dispatcher, Bot, Router, F
+from aiogram.filters import Command
 
 
-@bot.message_handler(commands=['help'])
-def any_text(message):
-    bot.send_message(message.chat.id, 'Я пока ничего не могу')
+
+router = Router(name='MyRouter')
 
 
-if __name__ == '__main__':
-    bot.polling(none_stop=True)
+@router.message(Command('start', 'Привет'))
+
+
+async def main():
+    bot = Bot(token='7581915376:AAG8FWud6rpdfM7tRhVgaWmz19-AeX9Gogg')
+    dp = Dispatcher()
+
+    dp.include_router(router)
+
+    await dp.start_polling(bot)
+
+
+logging.basicConfig(level=logging.INFO)
+asyncio.run(main())
